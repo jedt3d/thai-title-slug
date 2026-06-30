@@ -47,14 +47,13 @@ Thai titles need English text before they can become URL-safe slugs. This tool
 is designed to use Apple's built-in Translate action through macOS Shortcuts, so
 you do not need an external translation service account.
 
-Create a Shortcut named `Translate Thai Title To English`:
+Install the shared Shortcut:
 
-1. Open Shortcuts on macOS.
-2. Create a new Shortcut.
-3. Set it to receive text from Shortcut Input.
-4. Add the Translate Text action.
-5. Set source language to Thai and target language to English.
-6. Return the translated text as the Shortcut result.
+[Translate Thai Title To English](https://www.icloud.com/shortcuts/34ff82d00d5d4100aed7916b0122e466)
+
+The Shortcut must be named exactly `Translate Thai Title To English`. It reads
+the input file passed by the `shortcuts` CLI, extracts the text, translates Thai
+to English with Apple Translate, and returns the translated text.
 
 Then run:
 
@@ -68,6 +67,15 @@ Internally this uses:
 ```sh
 shortcuts run "$SLUG_TRANSLATE_SHORTCUT" --input-path title.txt --output-type public.plain-text
 ```
+
+If the iCloud link is unavailable, create it manually:
+
+1. Open Shortcuts on macOS.
+2. Create a new Shortcut.
+3. Name it `Translate Thai Title To English`.
+4. Add `Get Text from Input`.
+5. Add `Translate Text`; set source language to Thai and target language to English.
+6. Add `Stop and Output`, returning `Translated Text`.
 
 For tests or a custom fully-local translator, `SLUG_TRANSLATE_COMMAND` is still
 available. It receives the Thai title on stdin and should print English text on
