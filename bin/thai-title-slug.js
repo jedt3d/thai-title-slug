@@ -7,7 +7,7 @@ const { spawnSync } = require("child_process");
 
 const THAI_RE = /[\u0E00-\u0E7F]/;
 const DEFAULT_CONTENT_DIR = "content/english/blog";
-const VERSION = "0.1.0";
+const VERSION = "0.1.1";
 
 function parseArgs(argv) {
   const args = {
@@ -75,9 +75,8 @@ function usage() {
     "  --help                Show this help.",
     "",
     "Translation providers, checked in this order:",
-    "  SLUG_TRANSLATE_COMMAND   Command that receives the Thai title on stdin.",
-    "  SLUG_TRANSLATE_SHORTCUT  macOS Shortcut name.",
-    "  LIBRETRANSLATE_URL       LibreTranslate server URL.",
+    "  SLUG_TRANSLATE_SHORTCUT  macOS Shortcut name using Apple Translate.",
+    "  SLUG_TRANSLATE_COMMAND   Optional local command that receives the title on stdin.",
   ].join("\n");
 }
 
@@ -144,28 +143,6 @@ function setSlug(markdown, frontmatter, slug) {
   return `---\n${nextBody}\n---\n${markdown.slice(frontmatter.end)}`;
 }
 
-function translateWithCommand(title) {
-  const command = process.env.SLUG_TRANSLATE_COMMAND;
-  if (!command) {
-    return "";
-  }
-
-  const result = spawnSync(command, {
-    input: title,
-    encoding: "utf8",
-    shell: true,
-    timeout: 30000,
-  });
-
-  if (result.status !== 0) {
-    throw new Error(
-      `SLUG_TRANSLATE_COMMAND failed: ${(result.stderr || result.stdout || "").trim()}`,
-    );
-  }
-
-  return (result.stdout || "").trim();
-}
-
 function translateWithShortcut(title) {
   const shortcut = process.env.SLUG_TRANSLATE_SHORTCUT;
   if (!shortcut || process.platform !== "darwin") {
@@ -201,44 +178,30 @@ function translateWithShortcut(title) {
   }
 }
 
-async function translateWithLibreTranslate(title) {
-  const baseUrl = process.env.LIBRETRANSLATE_URL;
-  if (!baseUrl) {
+function translateWithCommand(title) {
+  const command = process.env.SLUG_TRANSLATE_COMMAND;
+  if (!command) {
     return "";
   }
 
-  const endpoint = new URL("/translate", baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
-  const body = {
-    q: title,
-    source: process.env.SLUG_TRANSLATE_SOURCE || "th",
-    target: process.env.SLUG_TRANSLATE_TARGET || "en",
-    format: "text",
-  };
-
-  if (process.env.LIBRETRANSLATE_API_KEY) {
-    body.api_key = process.env.LIBRETRANSLATE_API_KEY;
-  }
-
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+  const result = spawnSync(command, {
+    input: title,
+    encoding: "utf8",
+    shell: true,
+    timeout: 30000,
   });
 
-  if (!response.ok) {
-    throw new Error(`LibreTranslate failed with HTTP ${response.status}`);
+  if (result.status !== 0) {
+    throw new Error(
+      `SLUG_TRANSLATE_COMMAND failed: ${(result.stderr || result.stdout || "").trim()}`,
+    );
   }
 
-  const data = await response.json();
-  return String(data.translatedText || "").trim();
+  return (result.stdout || "").trim();
 }
 
 async function translateTitle(title) {
-  return (
-    translateWithCommand(title) ||
-    translateWithShortcut(title) ||
-    (await translateWithLibreTranslate(title))
-  );
+  return translateWithShortcut(title) || translateWithCommand(title);
 }
 
 async function slugFromTitle(title) {
@@ -249,10 +212,10 @@ async function slugFromTitle(title) {
     throw new Error(
       [
         `Could not generate an English slug for "${title}".`,
-        "Set one manually with slug: \"english-kebab-case\" or configure a provider:",
+        "Set one manually with slug: \"english-kebab-case\" or configure macOS translation:",
+        "- SLUG_TRANSLATE_SHORTCUT=\"Translate Thai Title To English\"",
+        "Optional for tests or custom local translators:",
         "- SLUG_TRANSLATE_COMMAND=\"your-command\"",
-        "- SLUG_TRANSLATE_SHORTCUT=\"Your macOS Shortcut Name\"",
-        "- LIBRETRANSLATE_URL=\"https://your-libretranslate.example\"",
       ].join("\n"),
     );
   }

@@ -1,6 +1,6 @@
 {
   "name": "@jedt3d/thai-title-slug",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generate English kebab-case slugs from Thai blog titles for Hugo content.",
   "license": "MIT",
   "author": "Worajedt Sitthidumrong",

@@ -41,25 +41,22 @@ thai-title-slug --content-dir content/english/blog --dry-run
 By default, content scanning only updates posts whose titles contain Thai text.
 Use `--all-titles` if you also want missing slugs added for English titles.
 
-## Translation Providers
+## macOS Translation
 
-Thai titles need an English translation provider. The CLI checks providers in
-this order.
+Thai titles need English text before they can become URL-safe slugs. This tool
+is designed to use Apple's built-in Translate action through macOS Shortcuts, so
+you do not need an external translation service account.
 
-### Custom Command
+Create a Shortcut named `Translate Thai Title To English`:
 
-`SLUG_TRANSLATE_COMMAND` receives the title on stdin and should print English
-text on stdout:
+1. Open Shortcuts on macOS.
+2. Create a new Shortcut.
+3. Set it to receive text from Shortcut Input.
+4. Add the Translate Text action.
+5. Set source language to Thai and target language to English.
+6. Return the translated text as the Shortcut result.
 
-```sh
-SLUG_TRANSLATE_COMMAND='your-translate-command' \
-  thai-title-slug --title "AI ในโรงพยาบาลไทย"
-```
-
-### macOS Shortcuts
-
-Create a Shortcut that accepts text input, translates it to English, and returns
-plain text. Then run:
+Then run:
 
 ```sh
 SLUG_TRANSLATE_SHORTCUT="Translate Thai Title To English" \
@@ -72,21 +69,13 @@ Internally this uses:
 shortcuts run "$SLUG_TRANSLATE_SHORTCUT" --input-path title.txt --output-type public.plain-text
 ```
 
-### LibreTranslate
-
-Point the CLI at a LibreTranslate server:
+For tests or a custom fully-local translator, `SLUG_TRANSLATE_COMMAND` is still
+available. It receives the Thai title on stdin and should print English text on
+stdout:
 
 ```sh
-LIBRETRANSLATE_URL="https://libretranslate.example" \
+SLUG_TRANSLATE_COMMAND='your-translate-command' \
   thai-title-slug --title "AI ในโรงพยาบาลไทย"
-```
-
-Optional settings:
-
-```sh
-LIBRETRANSLATE_API_KEY="..."
-SLUG_TRANSLATE_SOURCE="th"
-SLUG_TRANSLATE_TARGET="en"
 ```
 
 ## Hugo Integration
