@@ -1,0 +1,21 @@
+{
+  "name": "@jedt3d/thai-title-slug",
+  "version": "0.1.0",
+  "description": "Generate English kebab-case slugs from Thai blog titles for Hugo content.",
+  "license": "MIT",
+  "author": "Worajedt Sitthidumrong",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jedt3d/thai-title-slug.git"
+  },
+  "bin": {
+    "thai-title-slug": "bin/thai-title-slug.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check": "node bin/thai-title-slug.js --help >/dev/null",
+    "test": "node test/run-tests.js"
+  }
+}
